@@ -49,11 +49,11 @@ void server_send_file_data(int fd, char filename[],char path[]){
 		construct_blockcode(blockcode,filename,stripenum,server_id);
 		// printf("block name is: %s\n",blockcode);
 		// strcat(filepath,blockcode);	
-		printf("filepath name is: %s| compared filename is %s\n",blockcode,ptr->d_name);
+		// printf("filepath name is: %s| compared filename is %s\n",blockcode,ptr->d_name);
 
 		if(strcmp(blockcode,ptr->d_name)==0){
 			f_exist=1;
-			printf("find the block file\n");
+			// printf("find the block file\n");
 			stripenum++;
 			
 			closedir(dir);
@@ -87,7 +87,7 @@ void server_send_file_data(int fd, char filename[],char path[]){
 		if(digit>='0' && digit<='9'){
 			true_length=true_length*10+digit-'0';
 		}
-		printf("digit is %c %d\n", digit,digit);
+		// printf("digit is %c %d\n", digit,digit);
 	}
 	fflush(info_file);
 	fclose(info_file);
@@ -102,7 +102,7 @@ void server_send_file_data(int fd, char filename[],char path[]){
 	header.length=(stripenum)*BLOCKSIZE*N;
 	header.length = htonl(header.length);
 	header.file_length=htonl(true_length);
-	printf("true_length is %d\n",true_length);
+	// printf("true_length is %d\n",true_length);
 	// int filelength=header.length;
 	// printf("file length is %d\n",filelength);
 	// close(file);
@@ -111,7 +111,7 @@ void server_send_file_data(int fd, char filename[],char path[]){
 	}
 	header.length = ntohl(header.length);
 
-	printf("stripenum: %d\n",stripenum);
+	// printf("stripenum: %d\n",stripenum);
 	for(k=0;k<stripenum;k++)
 	{
 		FILE * file=NULL;
@@ -148,7 +148,7 @@ void server_send_file_data(int fd, char filename[],char path[]){
 					// printf("can i reach there,\n");
 				}
 				else{
-					printf("start sending another stripe\n");
+					// printf("start sending another stripe\n");
 					if((len=send(fd,payload,BLOCKSIZE-sizeof(payload)*i,0))<0){
 						printf("can not send payload to client\n");
 						exit(-1);
@@ -177,10 +177,10 @@ void server_send_file_data(int fd, char filename[],char path[]){
 		struct message_s finish_data_header;
 		while((len=recv(fd,&finish_data_header,sizeof(finish_data_header),0))<0){
 			// perror("The client has not recv all the data\n");
-			printf("why i am stuck\n");
+			// printf("why i am stuck\n");
 		}
 		if(finish_data_header.type==0xD1){
-			printf("Sending finished\n");
+			// printf("Sending finished\n");
 		}
 		
 		
@@ -188,7 +188,7 @@ void server_send_file_data(int fd, char filename[],char path[]){
 
 
 	}
-	printf("finish sending\n");	
+	printf("Done to send file\n");	
 }
 
 void server_receive_file_data(int fd,char filename[], char path[]){
@@ -204,7 +204,7 @@ void server_receive_file_data(int fd,char filename[], char path[]){
 
 	header.length = ntohl(header.length);
 	header.file_length=ntohl(header.file_length);
-	printf("length: %d\n",header.length);
+	// printf("length: %d\n",header.length);
 	if(header.type!=0xFF){
 		
 		perror("type is wrong \n");
@@ -230,11 +230,11 @@ void server_receive_file_data(int fd,char filename[], char path[]){
 	strcat(info_filepath,path);
 	strcat(info_filepath,tmp);
 	strcat(info_filepath,filename);
-	printf("what is problem1\n");
+	// printf("what is problem1\n");
 	if((info_file=fopen(info_filepath,"wb"))==NULL){
 		printf("can not create info file\n");
 	}
-	printf("what is problem4\n");
+	// printf("what is problem4\n");
 
 	char length_to_file[20]="";
 	snprintf(length_to_file,10,"%d",header.file_length);
@@ -242,10 +242,10 @@ void server_receive_file_data(int fd,char filename[], char path[]){
 	if(fwrite(length_to_file,strlen(length_to_file),1,info_file)<0){
 		printf("can not write info file\n");
 	}
-	printf("what is problem2\n");
+	// printf("what is problem2\n");
 	fflush(info_file);
 	fclose(info_file);
-	printf("what is problem3\n");
+	// printf("what is problem3\n");
 
 	for(i=0;i<ceiling((float)header.length/BLOCKSIZE);i++){
 		FILE * downfile=NULL;
@@ -265,10 +265,10 @@ void server_receive_file_data(int fd,char filename[], char path[]){
 		}
 
 
-		printf("begin to download file from client\n");
+		// printf("begin to download file from client\n");
 		int len_left=BLOCKSIZE;
 		while(len_left!=0){
-			printf("i am in\n");
+			// printf("i am in\n");
 			int min;
 			memset(payload,0,PAYLEN);
 			min=(sizeof(payload)>len_left)?len_left:sizeof(payload);
@@ -278,7 +278,7 @@ void server_receive_file_data(int fd,char filename[], char path[]){
 			}
 			print_payload(payload,len);
 			if((fwrite(payload,len,1,downfile))<0){
-				printf("wrong to write file!\n");
+				printf("something wrong to write file!\n");
 			}
 			len_left-=len;
 			if(len_left<0){
@@ -299,13 +299,13 @@ int extract_filename(struct dirent *ptr,char * payload, int index){
 		return index;
 	}
 	if(strncmp(ptr->d_name,"info_",5)==0){
-		printf("filename: ");
+		// printf("filename: ");
 		for(i=5;i<strlen(ptr->d_name);i++){
 			payload[index]=ptr->d_name[i];
-			printf("%c",ptr->d_name[i]);
+			// printf("%c",ptr->d_name[i]);
 			index+=1;
 		}
-		printf("\n");
+		// printf("\n");
 		return index;
 	}
 	return index;
@@ -361,7 +361,7 @@ void list_reply(int accept_fd){
 	header.protocol[4]='p';
 
 	header.length=(strlen(payload));
-	printf("header: %d\n",header.length);
+	// printf("header: %d\n",header.length);
 	
 	header.length = htonl(header.length);
 
@@ -399,16 +399,17 @@ void list_reply(int accept_fd){
 		
 		}
 		if(fn_len==1){
-			printf("file list: %s",payload);
+			// printf("file list: %s",payload);
 			if((len=(send(accept_fd,payload,sizeof(payload),0)))<0){
 				perror("can not send the file name to client\n");
 			}
-			printf("len: %d\n",len);
+			// printf("len: %d\n",len);
 		}
 	}
 	closedir(dir);
 	//printf("Sending finished\n");
 	// free(message_to_client.payload);
+	printf("Done to send list\n");
 }
 
 
@@ -441,7 +442,7 @@ void reply_request_file(int accept_fd, struct message_s buf, char payload[]){
 
 	if(f_exist==0){
 		get_reply.type=0xB3;
-		printf("cannot find the file\n");
+		// printf("cannot find the file\n");
 	}
 	if((len=(send(accept_fd,&get_reply,sizeof(get_reply),0)))<0){
 		perror("can not send request to client");
@@ -478,7 +479,7 @@ void put_recv_file(int accept_fd){
 	}
 
 	server_receive_file_data(accept_fd,filename,"data/");
-
+	printf("Done to recv file\n");
 }
 
 void *pthread_loop(int* sDescriptor){
@@ -511,7 +512,7 @@ void *pthread_loop(int* sDescriptor){
 					client_count--;
 				pthread_mutex_unlock(&mutex);
 			}
-			printf("filename: %s len: %d\n",payload,len);
+			// printf("filename: %s len: %d\n",payload,len);
 			reply_request_file( accept_fd, buf,payload);
 		}
 		if(buf.type==0xC1){
@@ -542,7 +543,7 @@ void main_loop(unsigned short port){
 	// addr.sin_addr.s_addr=htonl("192.168.0.1");
 	addr.sin_addr.s_addr=htonl(INADDR_ANY);
 	addr.sin_port=htons(port);
-	printf("server: %d\n",INADDR_ANY );
+	// printf("server: %d\n",INADDR_ANY );
 	if(bind(fd, (struct sockaddr *) &addr, sizeof(addr))==-1)
 	{
 		perror("bind()");

@@ -60,8 +60,8 @@ void client_send_file_data(int fd[], Stripe *stripe, char filename[]){
 						printf("Can not send it to the %d server\n",i);
 						exit(1);
 					}
-					printf("len: %d min: %d data_block: %d\n",len,min,BLOCKSIZE);
-					print_payload(payload,len);
+					// printf("len: %d min: %d data_block: %d\n",len,min,BLOCKSIZE);
+					// print_payload(payload,len);
 					have_send[i]+=len;
 					memset(payload,0,sizeof(payload));
 				}
@@ -118,13 +118,13 @@ void encode_data(int fd[N],Stripe* stripe,char filename[]){
 	// printf("can i reach here 8\n");
 	ec_encode_data(BLOCKSIZE,k,p,stripe->table,stripe->data_block,stripe->parity_block);
 	// printf("can i reach here 9\n");
-	for(i=0;i<N;i++){
-		printf("%dth row:",i);
-		for(j=0;j<len;j++){
-			//printf("%d ",stripe->data_block[i][j]);
-		}
-		printf("\n");
-	}
+	// for(i=0;i<N;i++){
+	// 	// printf("%dth row:",i);
+	// 	for(j=0;j<len;j++){
+	// 		//printf("%d ",stripe->data_block[i][j]);
+	// 	}
+	// 	// printf("\n");
+	// }
 	client_send_file_data(fd,stripe,filename);
 	
 }
@@ -150,7 +150,7 @@ void divide_file_into_blocks(int fd[],char filename[],char path[]){
 		c=fgetc(file);
 	}
 
-	printf("file length is %d\n",filelength);
+	// printf("file length is %d\n",filelength);
 	fclose(file);
 
 
@@ -189,7 +189,7 @@ void divide_file_into_blocks(int fd[],char filename[],char path[]){
 	for(i=0;i<N;i++){
 		// printf("can i reach here3\n");
 		stripe->data_block[i]=(unsigned char*)malloc(sizeof(unsigned char )*BLOCKSIZE);
-		printf("ith data_block: %d\n",BLOCKSIZE);
+		// printf("ith data_block: %d\n",BLOCKSIZE);
 		memset(stripe->data_block[i],0,BLOCKSIZE);
 	}
 	// 
@@ -213,7 +213,7 @@ void divide_file_into_blocks(int fd[],char filename[],char path[]){
 					if_finish=1;
 					encode_data(fd,stripe,filename);
 					stripe->sid+=1;
-					printf("can i reach here 10\n");
+					// printf("can i reach here 10\n");
 					int x;
 					for(x=0;x<N;x++){
 						memset(stripe->data_block[x],0,BLOCKSIZE);
@@ -240,7 +240,7 @@ void divide_file_into_blocks(int fd[],char filename[],char path[]){
 
 
 	}
-	printf("Finish dividing the file\n");
+	// printf("Finish dividing the file\n");
 	
 	fclose(file);
 
@@ -264,11 +264,11 @@ void list_file(int fd[], struct message_s header){
 	for(i=0;i<N;i++)
 	{
 		if(fd[i]!=-1){
-			printf("fd: %d\n",fd[i]);
+			// printf("fd: %d\n",fd[i]);
 			if((len=(send(fd[i],&header,sizeof(header),0)))<0){
 				perror("can not send request for list\n");
 			}
-			printf("send the command to server\n");
+			// printf("send the command to server\n");
 			struct message_s message_from_server;
 			// printf("size : %d %d\n",sizeof(message_from_server),sizeof(message_from_server.payload));
 			if((len=(recv(fd[i],&message_from_server,sizeof(message_from_server),0)))<0){
@@ -279,7 +279,8 @@ void list_file(int fd[], struct message_s header){
 				char payload[PAYLEN];
 				memset(payload,0,sizeof(payload));
 				message_from_server.length = ntohl(message_from_server.length);
-				printf("size:%d\n",message_from_server.length);
+				// printf("size:%d\n",message_from_server.length);
+				printf("list: \n");
 				int j;
 				for( j=0;j<=(int)(message_from_server.length-1)/sizeof(payload);j++){
 					int lenleft=sizeof(payload);
@@ -294,7 +295,7 @@ void list_file(int fd[], struct message_s header){
 						}
 					}
 					
-					printf("%d %s\n",strlen(payload),payload);
+					printf("%s\n",payload);
 					
 				}
 			}
@@ -354,17 +355,17 @@ void select_recv_payload(int fd[],int work_node[], Stripe *stripe,int length){
 						}
 					}
 					// work_node[i]=1;
-					printf("can i reach here \n");
+					// printf("can i reach here \n");
 					for(j=0;j<len;j++){
 						// printf("have recv i: %d, j:%d, have_recv:%d, length: %d\n",i,j,have_recv[i],length);
 						stripe->data_block[i][j+have_recv[i]]=payload[j];
 					}	
-					printf("can i reach here 6\n");
+					// printf("can i reach here 6\n");
 					have_recv[i]+=len;
 					if(have_recv[i]==length){
 						recvAll+=1;
 					}
-					printf(" have_recv:%d, length: %d i:%i\n",have_recv[i],length,i);
+					// printf(" have_recv:%d, length: %d i:%i\n",have_recv[i],length,i);
 					if(have_recv[i]>length){
 						printf("recv extra data\n");
 						exit(1);
@@ -412,11 +413,11 @@ struct message_s select_recv_header(int fd[],int work_node[]){
 				// int min=(BLOCKSIZE-have_send[i]>sizeof(payload))?sizeof(payload):(BLOCKSIZE-have_send[i]);
 				struct message_s header;
 				if(work_node[i]==1 && have_recv[i]==0){
-					printf("severid: %d\n",i);
+					// printf("severid: %d\n",i);
 					memset(&header,0,sizeof(header));
 					if((len=recv(fd[i],&header,sizeof(header),0))!=sizeof(header)){
-						printf("Can not recv the header from the %d server\n",i);
-						printf("recv %d\n",len);
+						// printf("Can not recv the header from the %d server\n",i);
+						// printf("recv %d\n",len);
 						exit(1);
 					}
 					have_recv[i]=1;
@@ -479,7 +480,7 @@ void select_send_content(int fd[],int work_node[],void * content,int size_to_sen
 							printf("Can not send the header to the %d server\n",i);
 							exit(1);
 						}
-						printf("i have send %d size_to_send: %d i:%d\n",len,size_to_send,i);
+						// printf("i have send %d size_to_send: %d i:%d\n",len,size_to_send,i);
 						sendAll+=1;
 						have_send[i]=1;
 					}
@@ -499,7 +500,7 @@ void select_send_content(int fd[],int work_node[],void * content,int size_to_sen
 				if(FD_ISSET(fd[i],&sendfds)){
 					
 					if(work_node[i]!=1){
-						printf("%dth server can be connected fd: %d\n",i,fd[i]);
+						// printf("%dth server can be connected fd: %d\n",i,fd[i]);
 						if((len=send(fd[i],content,size_to_send,0))!=size_to_send){
 							printf("Can not send the header to the %d server\n",i);
 							exit(1);
@@ -519,9 +520,9 @@ void select_send_content(int fd[],int work_node[],void * content,int size_to_sen
 				}
 			}
 			
-			printf("time is out\n");
+			// printf("time is out\n");
 			if(sendAll<K){
-				printf("no enough servers are online\n");
+				// printf("no enough servers are online\n");
 				for(i=0;i<N;i++){
 					close(fd[i]);
 				}
@@ -618,9 +619,9 @@ void stripe_decode(Stripe * stripe,int work_node[],FILE* file,int lenleft){
 			failed_blocks_num+=1;
 		}
 	}
-	printf("in decode: can i reach here\n");
+	// printf("in decode: can i reach here\n");
 	ec_init_tables(K,N-K,decode_matrix,table);
-		printf("in decode: can i reach here2\n");
+		// printf("in decode: can i reach here2\n");
 	unsigned char** normal_datablock=(unsigned char**)malloc(sizeof(unsigned char*)*(K-failed_blocks_num));
 	unsigned char** failed_datablock=(unsigned char**)malloc(sizeof(unsigned char*)*(failed_blocks_num));
 	int g=0;
@@ -655,9 +656,9 @@ void stripe_decode(Stripe * stripe,int work_node[],FILE* file,int lenleft){
 		failed_datablock[i]=(unsigned char*)malloc(sizeof(unsigned char)*BLOCKSIZE);
 	}
 
-	printf("in decode: can i reach here3,failed_datablock: %d\n",failed_blocks_num);
+	// printf("in decode: can i reach here3,failed_datablock: %d\n",failed_blocks_num);
 	ec_encode_data(BLOCKSIZE,K,failed_blocks_num,table,normal_datablock,failed_datablock);
-	printf("in decode: can i reach here5\n");
+	// printf("in decode: can i reach here5\n");
 	int len_to_write=0;
 	if(lenleft>BLOCKSIZE*K){
 		len_to_write=BLOCKSIZE*K;
@@ -667,7 +668,7 @@ void stripe_decode(Stripe * stripe,int work_node[],FILE* file,int lenleft){
 	}
 	g=0;
 	h=0;
-	printf("len_to_write is %d\n",len_to_write);
+	// printf("len_to_write is %d\n",len_to_write);
 	for(i=0;i<K;i++){
 		if(len_to_write==0){
 			break;
@@ -744,11 +745,11 @@ void client_recv_file_data(int fd[],char filename[],char path[],int work_node[])
 		printf("faile to open file: %s\n",filepath);
 	}
 	for(i=0;i<ceiling((float)filelength/(BLOCKSIZE*N));i++){
-		printf("can i reach here 3\n");
+		// printf("can i reach here 3\n");
 		select_recv_payload(fd,work_node,stripe,BLOCKSIZE);
-		printf("can i reach here4\n");
+		// printf("can i reach here4\n");
 
-		printf("lenleft: %d\n",lenleft);
+		// printf("lenleft: %d\n",lenleft);
 		stripe_decode(stripe,work_node,file,lenleft);
 
 		if(i<ceiling((float)filelength/(BLOCKSIZE*N))-1){
@@ -757,7 +758,7 @@ void client_recv_file_data(int fd[],char filename[],char path[],int work_node[])
 		
 		struct message_s header;
 		header.type=0xD1;
-		printf("i have done collect a stripe\n");
+		// printf("i have done collect a stripe\n");
 		select_send_content(fd,work_node,&header,sizeof(header),0);	 
 	}
 	fclose(file);
@@ -806,7 +807,8 @@ void get_file(int fd[SERVERNUM],   char * command,char filename[]){
 	select_send_content(fd,work_node,&header,sizeof(header),1);
 	for(i=0;i<N;i++){
 		if(work_node[i]==1){
-				printf("the %d server is on\n",i);}
+				// printf("the %d server is on\n",i);
+			}
 	}
 	select_send_content(fd,work_node,payload,sizeof(payload),0);
 	struct message_s result_of_get=select_recv_header(fd,work_node);
@@ -1008,7 +1010,7 @@ int main(int argc, char **argv){
 			char tmp_port[100];
 			memset(tmp_ip,0,sizeof(tmp_ip));
 			memset(tmp_port,0,sizeof(tmp_ip));
-			printf("can i reach here 18\n");
+			// printf("can i reach here 18\n");
 			for(i=0;i<strlen(line);i++){
 				if(line[i]==':'){
 					// printf("can i reach here 120\n");
