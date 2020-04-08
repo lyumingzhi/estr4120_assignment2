@@ -1,0 +1,16 @@
+LIB = -lsocket -lnsl
+
+.PHONY:  myftpclient myftpserver
+myftpserver: myftpserver.o myftp.o myftpclient
+	gcc -o myftpserver myftpserver.o myftp.o -lpthread ${LIB}
+myftpserver.o: myftpserver.c myftp.h 
+	gcc -c myftpserver.c -lpthread ${LIB}
+myftpclient: myftpclient.o myftp.o
+	gcc -o myftpclient myftpclient.o myftp.o ${LIB}
+myftpclient.o: myftpclient.c myftp.h
+	gcc -c myftpclient.c ${LIB}
+myftp.o: myftp.c myftp.h
+	gcc -c myftp.c ${LIB}
+
+clean:
+	rm myftpserver myftpclient myftpserver.o myftpclient.o myftp.o
