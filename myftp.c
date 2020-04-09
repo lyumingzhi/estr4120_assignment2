@@ -18,7 +18,7 @@ int verify_filename(char name_to_search[],char filename[]){
 	printf("name_to_search: %s, filename: %s\n", name_to_search,filename);
 	char tmp[1024]="";
 	for(i=0;i<strlen(filename);i++){
-		printf("char %c",filename[i] );
+		// printf("char %c",filename[i] );
 		if(filename[i]=='_'){
 			if(ul1==0){
 				ul1=1;
@@ -30,7 +30,7 @@ int verify_filename(char name_to_search[],char filename[]){
 					tmp[j-i-1]=filename[j];
 				}
 				// strncpy(tmp,filename+i,strlen(filename)-i-1);
-				printf("strcmp(name_to_search,tmp) %d\n",strcmp(name_to_search,tmp) );
+				// printf("strcmp(name_to_search,tmp) %d\n",strcmp(name_to_search,tmp) );
 				return strcmp(name_to_search,tmp);
 			}
 		}

@@ -522,7 +522,7 @@ void select_send_content(int fd[],int work_node[],void * content,int size_to_sen
 			
 			// printf("time is out\n");
 			if(sendAll<K){
-				// printf("no enough servers are online\n");
+				printf("no enough servers are online\n");
 				for(i=0;i<N;i++){
 					close(fd[i]);
 				}
@@ -762,7 +762,7 @@ void client_recv_file_data(int fd[],char filename[],char path[],int work_node[])
 		select_send_content(fd,work_node,&header,sizeof(header),0);	 
 	}
 	fclose(file);
-	
+	printf("Done\n");
 	
 }
 void get_file(int fd[SERVERNUM],   char * command,char filename[]){
@@ -813,7 +813,7 @@ void get_file(int fd[SERVERNUM],   char * command,char filename[]){
 	select_send_content(fd,work_node,payload,sizeof(payload),0);
 	struct message_s result_of_get=select_recv_header(fd,work_node);
 	if(result_of_get.type==0xB2){
-		printf("server %d successfully find the file\n",fd[i]);
+		printf("servers successfully find the file\nplease wait for a while\n");
 		// recv_file_data(fd, filename,"");
 	}
 	else{
@@ -873,16 +873,16 @@ void put_file(int fd[SERVERNUM], char command[],char filename[]){
 		exit(1);
 	}
 	else{
-		printf("find the file\n");
+		printf("find the file\nplease wait for a while\n");
 		for(i=0;i<N;i++){
 			if((len=(send(fd[i],&header,sizeof(header),0)))<0){
-				perror("can not send request to client");
+				perror("can not send request to server");
 			}
 		}
 		//printf("send the header\n");
 		for(i=0;i<N;i++){
 			if((len=(send(fd[i],payload,sizeof(payload),0)))<0){
-				perror("can not send request to client");
+				perror("can not send request to server");
 			}
 		}
 		//printf("send the file name\n");
@@ -898,9 +898,13 @@ void put_file(int fd[SERVERNUM], char command[],char filename[]){
 		divide_file_into_blocks(fd,filename,"");
 		
 	}
+	printf("Done\n");
 }
 void main_task(in_addr_t *ip, unsigned short *port,char command[],char filename[])
 {
+	int i;
+	int j;
+
 	struct message_s header;
 	// struct all_data buf;
 	int *fd=(int*)malloc(sizeof(int)*SERVERNUM);
@@ -913,19 +917,19 @@ void main_task(in_addr_t *ip, unsigned short *port,char command[],char filename[
 	// scanf("%s", command);
 	// printf("command: %s",command);
 
-	for(int i=0;i<SERVERNUM;i++)
+	for( i=0;i<SERVERNUM;i++)
 	{	
 		fd[i]=socket(AF_INET, SOCK_STREAM,0);
 		if(fd[i]== -1){
 			perror("socket()");
 			exit(1);
 		}
-		printf("fd[%d]: %d\n",i,fd[i]);
+		// printf("fd[%d]: %d\n",i,fd[i]);
 		memset(&addr, 0, sizeof(struct sockaddr_in));
 		addr.sin_family=AF_INET;
 		addr.sin_addr.s_addr=ip[i];
 		addr.sin_port=htons(port[i]);
-		printf("connect: %d\n",port[i]);
+		// printf("connect: %d\n",port[i]);
 		if(connect(fd[i], (struct sockaddr *) &addr, addrlen)==-1){
 			printf("connection to the %dth server is failed\n",i);
 			close(fd[i]);
@@ -951,12 +955,26 @@ void main_task(in_addr_t *ip, unsigned short *port,char command[],char filename[
 		get_file(fd,command,filename);
 	}
 	if (strcmp(command,"put")==0){
+		for(i=0;i<N;i++){
+			if(fd[i]<0){
+				printf("Not all servers are connected\n");
+				for(j=0;j<N;j++){
+					if(fd[j]<0){
+						close(fd[i]);
+					}
+				}
+				exit(1);
+			}
+		}
 		put_file(fd,command,filename);
 		// printf("Sent nothing\n");
 	}
 
-	
-	close(fd);
+	for(j=0;j<N;j++){
+		if(fd[i]<0){
+			close(fd[i]);
+		}
+	}
 }
 
 int main(int argc, char **argv){

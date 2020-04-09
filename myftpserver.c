@@ -153,9 +153,9 @@ void server_send_file_data(int fd, char filename[],char path[]){
 						printf("can not send payload to client\n");
 						exit(-1);
 					}
-					if(len!=BLOCKSIZE){
-						printf("the data sent is incomplete len:%d, BLOCKSIZE: %d i: %d\n",len,BLOCKSIZE,i);
-					}
+					// if(len!=BLOCKSIZE){
+					// 	printf("the data sent is incomplete len:%d, BLOCKSIZE: %d i: %d\n",len,BLOCKSIZE,i);
+					// }
 					memset(payload,0,PAYLEN);
 					if_finish=1;
 					break;
@@ -261,7 +261,7 @@ void server_receive_file_data(int fd,char filename[], char path[]){
 		strcat(filepath,blockcode);
 		//printf("cat the filename\n");
 		if((downfile=fopen(filepath,"wb"))==NULL){
-			printf("open file: %s\n",filepath);
+			printf("can not open file: %s\n",filepath);
 		}
 
 
@@ -276,7 +276,7 @@ void server_receive_file_data(int fd,char filename[], char path[]){
 				perror("fail to recv file data from client\n");
 				exit(1);
 			}
-			print_payload(payload,len);
+			// print_payload(payload,len);
 			if((fwrite(payload,len,1,downfile))<0){
 				printf("something wrong to write file!\n");
 			}
@@ -582,7 +582,7 @@ void main_loop(unsigned short port){
 int main(int argc, char **argv){
 	unsigned short port;
 	int server_id;
-	if (argc!=3){
+	if (argc!=2){
 		fprintf(stderr, "Usage: %s configeration file\n",argv[0]);
 		exit(1);
 	}
@@ -620,7 +620,7 @@ int main(int argc, char **argv){
 		line_num++;
 	} 
 
-	port=atoi(argv[2]);
+	// port=atoi(argv[2]);
 	main_loop(port);
 	return 0;
 } 
